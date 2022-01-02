@@ -1,5 +1,18 @@
-<app-task-item
-  *ngFor="let task of tasks"
-  [task]="task"
-  (onDeleteTask)="deleteTask(task)"
-></app-task-item>
+<app-add-task (onAddTask)="addTask($event)"></app-add-task>
+
+<ng-container *ngIf="tasks.length; else noItems">
+  <app-task-item
+    *ngFor="let task of tasks"
+    [task]="task"
+    (onDeleteTask)="deleteTask(task)"
+    (onToggleReminder)="toggleReminder(task)"
+  ></app-task-item>
+</ng-container>
+
+<ng-template #noItems>
+  <ng-container *ngIf="!hasError; else errorTemplate">
+    No Items found
+  </ng-container>
+</ng-template>
+
+<ng-template #errorTemplate> Error, please try again. </ng-template>
