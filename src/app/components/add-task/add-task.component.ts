@@ -1,5 +1,13 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Output,
+  EventEmitter,
+  OnDestroy,
+} from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UiService } from '../../services/ui.service';
+import { Subject, takeUntil } from 'rxjs';
 
 import { Task } from '../../Task';
 
@@ -8,13 +16,16 @@ import { Task } from '../../Task';
   templateUrl: './add-task.component.html',
   styleUrls: ['./add-task.component.scss'],
 })
-export class AddTaskComponent implements OnInit {
+export class AddTaskComponent implements OnInit, OnDestroy {
   @Output() onAddTask: EventEmitter<Task> = new EventEmitter();
   forms = new FormGroup({
     text: new FormControl(null, Validators.required),
     day: new FormControl(null, Validators.required),
     reminder: new FormControl(false, Validators.required),
   });
+
+  showAddTask: boolean = false;
+  destroy = new Subject();
 
   private _submitted = false;
 
@@ -25,10 +36,18 @@ export class AddTaskComponent implements OnInit {
   get textControl(): FormControl {
     return this.forms.controls['text'] as FormControl;
   }
-  constructor() {}
+  constructor(private uiService: UiService) {}
+  ngOnDestroy(): void {
+    this.destroy.next(undefined);
+    this.destroy.complete();
+  }
 
-  ngOnInit(): void {}
-
+  ngOnInit(): void {
+    this.uiService
+      .onToggle()
+      .pipe(takeUntil(this.destroy))
+      .subscribe((task) => (this.showAddTask = task));
+  }
   onSubmit(): void {
     this._submitted = true;
 
